@@ -2543,6 +2543,8 @@ evhttp_connection_connect_(struct evhttp_connection *evcon)
 	if (evcon->state == EVCON_CONNECTING)
 		return (0);
 
+    bufferevent_enable_locking_(evcon->bufev, NULL);
+    bufferevent_lock(evcon->bufev);
 	evhttp_connection_reset_(evcon);
 
 	EVUTIL_ASSERT(!(evcon->flags & EVHTTP_CON_INCOMING));
@@ -2594,6 +2596,8 @@ evhttp_connection_connect_(struct evhttp_connection *evcon)
 		ret = bufferevent_socket_connect_hostname(evcon->bufev,
 				evcon->dns_base, evcon->ai_family, address, evcon->port);
 	}
+
+    bufferevent_unlock(evcon->bufev);
 
 	if (ret < 0) {
 		evcon->state = old_state;
